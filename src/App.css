@@ -1,0 +1,11 @@
+.contenedorColor{
+  width: 200px;
+  height: 200px;
+}
+.contenedorColorTarjeta{
+  width: 100px;
+  height: 100px;
+}
+.bgCelesteClaro{
+  background-color: rgba(0, 221, 255, 0.252);
+}
