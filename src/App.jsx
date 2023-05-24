@@ -8,20 +8,6 @@ const App = () => {
   return (
     <main>
         <Administrador></Administrador>
-        <section className='d-flex justify-content-center flex-wrap'>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-            <Tarjeta></Tarjeta>
-
-        </section>
-
     </main>
   );
 };
