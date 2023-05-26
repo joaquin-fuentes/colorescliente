@@ -5,7 +5,7 @@ import { useState, useEffect } from "react";
 const Administrador = () => {
 
     const [tarjeta, setTarjeta] = useState("")
-    let tarjetasLocalstorage = JSON.parse(localStorage.getItem("listaTarjetas") || [])
+    let tarjetasLocalstorage = JSON.parse(localStorage.getItem("listaTarjetas") || "[]")
     const [listadoTarjetas, setlistadoTarjetas] = useState(tarjetasLocalstorage)
 
     useEffect(()=>{
