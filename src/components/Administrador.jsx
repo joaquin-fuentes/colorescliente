@@ -1,33 +1,126 @@
 import { Button, Form } from "react-bootstrap"
 import ListadoTarjetas from "./ListadoTarjetas";
+import Swal from "sweetalert2"
 import { useState, useEffect } from "react";
+import { obtenerColores, consultaCrearColor, consultaBorrarColor, consultaEditarColor } from "../components/helpers/queries"
+
 
 const Administrador = () => {
 
-    const [tarjeta, setTarjeta] = useState("")
-    let tarjetasLocalstorage = JSON.parse(localStorage.getItem("listaTarjetas") || "[]")
-    const [listadoTarjetas, setlistadoTarjetas] = useState(tarjetasLocalstorage)
+    const [nombreColor, setColor] = useState("");
+    const [id, setId] = useState("");
+    const [listadoColores, setListadoColores] = useState([]);
+    const [editar, setEditar] = useState(false)
 
-    useEffect(()=>{
-       
-        localStorage.setItem("listaTarjetas", JSON.stringify(listadoTarjetas))
-    }, [listadoTarjetas])
+    const traerColores = () => {
+        obtenerColores().then((respuesta) => {
+            if (respuesta != null) {
+                setListadoColores(respuesta)
+            } else {
+                Swal.fire("Error", "No se pudo obtener los datos de la API", "error")
+            }
+        })
+    }
+    useEffect(() => {
+        traerColores()
+
+    }, [])
 
     const estilo = {
-        backgroundColor: tarjeta,
+        backgroundColor: nombreColor,
     };
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        if (tarjeta !== "") {
-            setlistadoTarjetas([...listadoTarjetas, tarjeta]);
-            setTarjeta("");
+        if (nombreColor.trim() !== "") {
+            consultaCrearColor({ nombreColor }).then((respuesta) => {
+                if (respuesta.status === 201) {
+                    Swal.fire(
+                        'Agregado!',
+                        `El nuevo color fue agregado`,
+                        'success'
+                    )
+                    setColor("");
+                    traerColores()
+                } else {
+                    Swal.fire(
+                        'Error!',
+                        `No se pudo procesar su peticion`,
+                        'error'
+                    )
+                }
+            })
         }
     };
 
-    const borrarTarjeta = (nombreTarjeta)=>{
-        let arregloFiltrado = listadoTarjetas.filter((tarjeta)=>tarjeta !== nombreTarjeta)
-        setlistadoTarjetas(arregloFiltrado)
+    const borrarColor = (id) => {
+        Swal.fire({
+            title: 'Estas seguro?',
+            text: "Seguro que deseas eliminar este color del listado?",
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Si, borrar!',
+            cancelButtonText: "Cancelar"
+        }).then((result) => {
+            if (result.isConfirmed) {
+                // aqui tengo que hacer la peticion DELETE 
+                console.log(nombreColor)
+                console.log(id)
+                consultaBorrarColor(id).then((respuesta) => {
+                    if (respuesta.status === 200) {
+                        Swal.fire(
+                            'Eliminado!',
+                            `El color fue eliminado`,
+                            'success'
+                        )
+                        //actualizar el sate listadoColores del componente administrador
+                        traerColores()
+                    } else {
+                        Swal.fire("Se produjo un error", "Error, intentelo mas tarde ", "error")
+                    }
+                })
+            }
+        })
+    }
+    const editarColor = (e) => {
+        e.preventDefault()
+        console.log(nombreColor)
+        console.log(id)
+             consultaEditarColor({nombreColor}, id).then((respuesta) => {
+                 if (respuesta.status === 200) {
+                     Swal.fire(
+                         'Color editado!',
+                         `El color fue editado con éxito`,
+                         'success'
+                     )
+                     traerColores()
+                     setColor("");
+                     setId("")
+                     setEditar(false)
+                 } else {
+                     Swal.fire("Se produjo un error", "Error, intentelo mas tarde ", "error")
+                 }
+     
+               })  
+    }
+    const mostrarBotonEditarOEnviar = () => {
+        if (editar === false) {
+            return <Button variant="primary" type="submit" className='mx-2'>
+                       Crear
+                   </Button>
+
+        } else {
+            return <div className='d-flex'>
+                      <Button onClick={editarColor} variant="primary" type="submit" className='mx-2'>
+                          Editar
+                      </Button>
+                      <Button onClick={()=>{setEditar(false), setColor(""), setId("")}} variant="danger" type="button" className='mx-2'>
+                          Cancelar
+                      </Button>
+                  </div>
+        }
     }
 
 
@@ -43,18 +136,18 @@ const Administrador = () => {
                     </div>
                     <Form.Group className='mx-4 w-100' >
                         <Form.Control type="text" placeholder="Ingrese un color"
-                            onChange={(e) => setTarjeta(e.target.value)}
-                            value={tarjeta} />
+                            onChange={(e) => setColor(e.target.value)}
+                            value={nombreColor} />
                     </Form.Group>
                 </section>
                 <section className='border p-3 d-flex flex-row-reverse'>
-                    <Button variant="primary" position="top-end" type="submit">
-                        Guardar
-                    </Button>
+                    {
+                        mostrarBotonEditarOEnviar()
+                    }
                 </section>
             </Form>
             <section>
-                <ListadoTarjetas  listadoTarjetas={listadoTarjetas} borrarTarjeta={borrarTarjeta}></ListadoTarjetas>
+                <ListadoTarjetas setId={setId} borrarColor={borrarColor} listadoColores={listadoColores} setColor={setColor} setEditar={setEditar} editarColor={editarColor}></ListadoTarjetas>
             </section>
         </article>
     );
